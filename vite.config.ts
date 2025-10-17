@@ -1,18 +1,28 @@
 import path from 'path';
-import { defineConfig, loadEnv } from 'vite';
-import react from '@vitejs/plugin-react'; // <-- IMPORT THIS
+import { defineConfig } from 'vite'; // Removed loadEnv import
+import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
-    const env = loadEnv(mode, '.', '');
+    // Read the API key directly from the environment variables set by GitHub Actions
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+
+    // Optional: Add a check to ensure the key is present during build
+    if (!geminiApiKey && mode !== 'development') {
+      console.error("Build failed: GEMINI_API_KEY environment variable is not set!");
+      // Make the build fail explicitly if the key is missing
+      process.exit(1);
+    }
+
     return {
       server: {
         port: 3000,
         host: '0.0.0.0',
       },
-      plugins: [react()], // <-- ADD THIS
+      plugins: [react()],
       define: {
-        'process.env.API_KEY': JSON.stringify(env.AIzaSyD4wEFlkdN2ClFQwc0JAQkvZ85tOx2RvTs),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.AIzaSyD4wEFlkdN2ClFQwc0JAQkvZ85tOx2RvTs)
+        // Use the key read directly from process.env
+        'process.env.API_KEY': JSON.stringify(geminiApiKey || ""),
+        'process.env.GEMINI_API_KEY': JSON.stringify(geminiApiKey || "")
       },
       resolve: {
         alias: {
